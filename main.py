@@ -18,7 +18,7 @@ class Field(ABC):
         self.encoding = encoding
         self.endian = endian
 
-        # Infrorms if data of this field is vital to the analysis; if not, it shall not be displayable
+        # Informs if data of this field is vital to the analysis; if not, it shall not be displayable
         self.isDataCrucial = isDataCrucial
         self.data = None
 
@@ -109,19 +109,62 @@ class TheDataSubChunk(Chunk):
         self.fields[2].size = self.fields[1].data
         self.fields[2].read_field(file)
         
+class TheListChunk(Chunk):
+
+    LIST_CHUNK_INFO_ID = ['IARL','IART','ICMS',
+                          'ICMT','ICOP','ICRD',
+                          'ICRP','IDIM','IDPI',
+                          'IENG','IGNR','IKEY',
+                          'ILGT','IMED','INAM',
+                          'IPLT','IPRD','ISBJ',
+                          'ISFT','ISRC','ISRF','ITCH']
+
+    # this init is incomplete and only contains 3 'preamble' fields which will or will not be followed by list of other subchunks containing some data
+    def __init__(self):
+        super().__init__([TextField('List Chunk ID',4,336,'UTF-8','big',True),
+        NumberField('List Chunk Size',4,440,'UTF-32','little',True),
+        TextField('List Type ID',4,3336,'UTF-8','big',True)])
+
+    def read_chunk(self,file):
+        self.fields[0].read_field(file)
+        self.fields[1].read_field(file)
+        self.fields[2].read_field(file)
+
+        while(self.is_infoID_valid(file)):
+            infoID = TextField('List Chunk ID',4,336,'UTF-8','big',True)
+            infoID.read_field(file)
+            size = NumberField('List Chunk Size',4,440,'UTF-32','little',True)
+            size.read_field(file)
+            text = TextField('List Type ID',size.data,3336,'UTF-8','big',True)
+            text.read_field(file)
+            self.fields.append(infoID)
+            self.fields.append(size)
+            self.fields.append(text)
+                
+    def is_infoID_valid(self,file):
+        testID = TextField('test ID',4,1111,'UTF-8','big',True)
+        testID.read_field(file)
+        file.seek(file.tell()-4)
+
+        if testID.data in self.LIST_CHUNK_INFO_ID:
+            return True
+        return False
 
 def test(fileName):
     with open(fileName,'rb') as f:
         TRChunk = TheRIFFChunk()
         TFSChunk = TheFmtSubChunk()
         TDSChunk = TheDataSubChunk()
+        TLChunk = TheListChunk()
         TRChunk.read_chunk(f)
         TFSChunk.read_chunk(f)
         TDSChunk.read_chunk(f)
+        TLChunk.read_chunk(f)
         print(TRChunk,end='')
         print(TFSChunk,end='')
         print(TDSChunk,end='')
+        print(TLChunk,end='')
 
 
 if __name__ == '__main__':
-    test('./sound-examples/ex1.wav')
+    test('./sound-examples/ex00.wav')
