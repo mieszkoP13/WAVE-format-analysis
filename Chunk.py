@@ -3,11 +3,16 @@ from typing import Type
 from Field import *
 
 class Chunk(ABC):
+    chunkAssertID: str
+
     def __init__(self, fields:Type[Field]=None):
         if fields is None:
             self.fields = []
 
         self.fields = fields
+
+    def __del__(self):
+        pass
 
     @abstractmethod
     def read_chunk(self,file):
@@ -22,7 +27,10 @@ class Chunk(ABC):
     def fieldCount(self):
         return len(self.fields)
 
+
 class TheRIFFChunk(Chunk):
+    chunkAssertID = 'RIFF'
+
     def __init__(self):
         super().__init__([TextField('Chunk ID',4,0,'UTF-8','big',True),
                         NumberField('Chunk Size',4,4,'UTF-32','little',True),
@@ -34,6 +42,8 @@ class TheRIFFChunk(Chunk):
 
 
 class TheFmtChunk(Chunk):
+    chunkAssertID = 'fmt '
+
     def __init__(self):
         super().__init__([TextField('Subchunk1 ID',4,12,'UTF-8','big',True),
         NumberField('Subchunk1 Size',4,16,'UTF-8','little',True),
@@ -50,6 +60,8 @@ class TheFmtChunk(Chunk):
         
 
 class TheDataChunk(Chunk):
+    chunkAssertID = 'data'
+
     def __init__(self):
         super().__init__([TextField('Subchunk2 ID',4,36,'UTF-8','big',True),
         NumberField('Subchunk2 Size',4,40,'UTF-32','little',True),
@@ -62,6 +74,7 @@ class TheDataChunk(Chunk):
         self.fields[2].read_field(file)
         
 class TheListChunk(Chunk):
+    chunkAssertID = 'LIST'
 
     LIST_CHUNK_INFO_ID = [ 'IARL','IART','ICMS',
                            'ICMT','ICOP','ICRD',
@@ -71,7 +84,7 @@ class TheListChunk(Chunk):
                            'IPLT','IPRD','ISBJ',
                            'ISFT','ISRC','ISRF','ITCH' ]
 
-    # this init is incomplete and only contains 3 'preamble' fields which will or will not be followed by list of other subchunks containing some data
+    # this init is incomplete and only contains 3 'preamble' fields which will or will not be followed by list of other subchunks
     def __init__(self):
         super().__init__([TextField('List Chunk ID',4,336,'UTF-8','big',True),
         NumberField('List Chunk Size',4,440,'UTF-32','little',True),
@@ -95,9 +108,7 @@ class TheListChunk(Chunk):
                 
     def is_infoID_valid(self,file):
         testID = TextField('test ID',4,1111,'UTF-8','big',True)
-        testID.read_field(file)
-        file.seek(file.tell()-4)
 
-        if testID.data in self.LIST_CHUNK_INFO_ID:
+        if testID.get_field_without_moving_cursor(file) in self.LIST_CHUNK_INFO_ID:
             return True
         return False

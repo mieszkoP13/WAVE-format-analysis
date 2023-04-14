@@ -33,6 +33,10 @@ class Field(ABC):
     def read_field(self,file):
         pass
 
+    @abstractmethod
+    def get_field_without_moving_cursor(self,file):
+        pass
+
 
 class TextField(Field):
     def __init__(self, name:str, size:int, offset:int, encoding:str, endian:str, isDataCrucial:bool):
@@ -41,9 +45,19 @@ class TextField(Field):
     def read_field(self,file):
         self.data = file.read(self.size).decode(self.encoding)
 
+    def get_field_without_moving_cursor(self,file):
+        _data = file.read(self.size).decode(self.encoding)
+        file.seek(file.tell()-self.size)
+        return _data
+
 class NumberField(Field):
     def __init__(self, name:str, size:int, offset:int, encoding:str, endian, isDataCrucial:bool):
         super().__init__(name, size, offset, encoding, endian, isDataCrucial)
 
     def read_field(self,file):
         self.data = int.from_bytes(file.read(self.size), self.endian)
+
+    def get_field_without_moving_cursor(self,file):
+        _data = int.from_bytes(file.read(self.size), self.endian)
+        file.seek(file.tell()-self.size)
+        return _data
