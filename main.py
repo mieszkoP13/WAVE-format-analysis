@@ -7,4 +7,4 @@ def test(fileName):
         print(wave,end='')
 
 if __name__ == '__main__':
-    test('./sound-examples/ex1.wav')
+    test('./sound-examples/ex2.wav')
