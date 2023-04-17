@@ -3,23 +3,20 @@ from typing import Type
 from Field import *
 
 class Chunk(ABC):
-    chunkAssertID: str
-
-    def __init__(self, fields:Type[Field]=None):
+    def __init__(self, chunkName: str, chunkAssertID: str, fields:Type[Field]=None):
         if fields is None:
             self.fields = []
 
+        self.chunkName = chunkName
+        self.chunkAssertID = chunkAssertID
         self.fields = fields
-
-    def __del__(self):
-        pass
 
     @abstractmethod
     def read_chunk(self,file):
         pass
 
     def __str__(self):
-        s=''
+        s=f'{self.chunkName}\n'
         for field in self.fields:
             s = s + str(field) + '\n'
         return s
@@ -27,12 +24,10 @@ class Chunk(ABC):
     def fieldCount(self):
         return len(self.fields)
 
-
 class TheRIFFChunk(Chunk):
-    chunkAssertID = 'RIFF'
 
     def __init__(self):
-        super().__init__([TextField('Chunk ID',4,0,'UTF-8','big',True),
+        super().__init__('The RIFF Chunk','RIFF',[TextField('Chunk ID',4,0,'UTF-8','big',True),
                         NumberField('Chunk Size',4,4,'UTF-32','little',True),
                         TextField('Format',4,8,'UTF-8','big',True)])
         
@@ -42,10 +37,9 @@ class TheRIFFChunk(Chunk):
 
 
 class TheFmtChunk(Chunk):
-    chunkAssertID = 'fmt '
 
     def __init__(self):
-        super().__init__([TextField('Subchunk1 ID',4,12,'UTF-8','big',True),
+        super().__init__('The Fmt Chunk','fmt ', [TextField('Subchunk1 ID',4,12,'UTF-8','big',True),
         NumberField('Subchunk1 Size',4,16,'UTF-8','little',True),
         NumberField('Audio Format',2,20,'UTF-8','little',True),
         NumberField('Number of Channels',2,22,'UTF-8','little',True),
@@ -60,10 +54,9 @@ class TheFmtChunk(Chunk):
         
 
 class TheDataChunk(Chunk):
-    chunkAssertID = 'data'
 
     def __init__(self):
-        super().__init__([TextField('Subchunk2 ID',4,36,'UTF-8','big',True),
+        super().__init__('The Data Chunk','data',[TextField('Subchunk2 ID',4,36,'UTF-8','big',True),
         NumberField('Subchunk2 Size',4,40,'UTF-32','little',True),
         TextField('Data',None,44,'ISO-8859-1','little',False)])
 
@@ -72,9 +65,8 @@ class TheDataChunk(Chunk):
         self.fields[1].read_field(file)
         self.fields[2].size = self.fields[1].data
         self.fields[2].read_field(file)
-        
+  
 class TheListChunk(Chunk):
-    chunkAssertID = 'LIST'
 
     LIST_CHUNK_INFO_ID = [ 'IARL','IART','ICMS',
                            'ICMT','ICOP','ICRD',
@@ -86,7 +78,7 @@ class TheListChunk(Chunk):
 
     # this init is incomplete and only contains 3 'preamble' fields which will or will not be followed by list of other subchunks
     def __init__(self):
-        super().__init__([TextField('List Chunk ID',4,336,'UTF-8','big',True),
+        super().__init__('The List Chunk','LIST',[TextField('List Chunk ID',4,336,'UTF-8','big',True),
         NumberField('List Chunk Size',4,440,'UTF-32','little',True),
         TextField('List Type ID',4,3336,'UTF-8','big',True)])
 
