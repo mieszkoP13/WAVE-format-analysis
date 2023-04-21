@@ -4,15 +4,19 @@ from Chunk import *
 class Wave():
     chunks = [ TheRIFFChunk(), # mandatory chunk
                TheFmtChunk(),
+               TheFactChunk(),
                TheDataChunk(), # mandatory chunk
                TheListChunk() ]
 
     def read_wave(self,file):
-        for chunk in self.chunks:
-            chunk.read_chunk(file)
-
-            if chunk.fields[0].data != chunk.chunkAssertID:
+        for chunk in self.chunks.copy():
+            try:
+                chunk.find_chunk(file)
+                chunk.read_chunk(file)
+            except Exception as e:
                 self.chunks.remove(chunk)
+                #print(e)
+            
 
     def __str__(self):
         s=''

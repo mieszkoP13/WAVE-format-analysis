@@ -11,6 +11,19 @@ class Chunk(ABC):
         self.chunkAssertID = chunkAssertID
         self.fields = fields
 
+    def find_chunk(self,file):
+        fileTxt = file.read()
+        # finding a postion of a chunk by its ID
+        pos = fileTxt.find(f'{self.chunkAssertID}'.encode())
+
+        # if it hasnt been found
+        if pos == -1:
+            file.seek(0)
+            raise Exception("chunk not found")
+        
+        # if it was found, file cursor is set to that position
+        file.seek(pos)
+
     @abstractmethod
     def read_chunk(self,file):
         pass
@@ -24,6 +37,7 @@ class Chunk(ABC):
     def fieldCount(self):
         return len(self.fields)
 
+
 class TheRIFFChunk(Chunk):
 
     def __init__(self):
@@ -34,6 +48,7 @@ class TheRIFFChunk(Chunk):
     def read_chunk(self,file):
         for field in self.fields:
             field.read_field(file)
+        file.seek(0)
 
 
 class TheFmtChunk(Chunk):
@@ -51,6 +66,7 @@ class TheFmtChunk(Chunk):
     def read_chunk(self,file):
         for field in self.fields:
             field.read_field(file)
+        file.seek(0)
         
 
 class TheDataChunk(Chunk):
@@ -65,7 +81,22 @@ class TheDataChunk(Chunk):
         self.fields[1].read_field(file)
         self.fields[2].size = self.fields[1].data
         self.fields[2].read_field(file)
+        file.seek(0)
   
+class TheFactChunk(Chunk):
+
+    def __init__(self):
+        super().__init__('The Fact Chunk','fact',[TextField('Subchunk2 ID',4,36,'UTF-8','big',True),
+        NumberField('Subchunk2 Size',4,40,'UTF-32','little',True),
+        TextField('Data',None,44,'ISO-8859-1','little',True)])
+
+    def read_chunk(self,file):
+        self.fields[0].read_field(file)
+        self.fields[1].read_field(file)
+        self.fields[2].size = self.fields[1].data
+        self.fields[2].read_field(file)
+        file.seek(0)
+
 class TheListChunk(Chunk):
 
     LIST_CHUNK_INFO_ID = [ 'IARL','IART','ICMS',
@@ -97,6 +128,7 @@ class TheListChunk(Chunk):
             self.fields.append(infoID)
             self.fields.append(size)
             self.fields.append(text)
+        file.seek(0)
                 
     def is_infoID_valid(self,file):
         testID = TextField('test ID',4,1111,'UTF-8','big',True)

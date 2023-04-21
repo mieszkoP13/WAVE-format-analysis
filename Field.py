@@ -43,7 +43,10 @@ class TextField(Field):
         super().__init__(name, size, offset, encoding, endian, isDataCrucial)
 
     def read_field(self,file):
-        self.data = file.read(self.size).decode(self.encoding)
+        d = file.read(self.size).decode(self.encoding)
+        if d == None:
+            raise Exception("read field error")
+        self.data = d
 
     def get_field_without_moving_cursor(self,file):
         _data = file.read(self.size).decode(self.encoding)
@@ -55,7 +58,10 @@ class NumberField(Field):
         super().__init__(name, size, offset, encoding, endian, isDataCrucial)
 
     def read_field(self,file):
-        self.data = int.from_bytes(file.read(self.size), self.endian)
+        d = int.from_bytes(file.read(self.size), self.endian)
+        if d == None:
+            raise Exception("read field error")
+        self.data = d
 
     def get_field_without_moving_cursor(self,file):
         _data = int.from_bytes(file.read(self.size), self.endian)
