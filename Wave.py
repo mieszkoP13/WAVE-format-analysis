@@ -2,7 +2,7 @@ from Field import *
 from Chunk import *
 
 class Wave():
-    def __init__(self, fileName):
+    def __init__(self, fileName: str):
 
         try:
             self.file = open(fileName, 'rb')
