@@ -23,7 +23,13 @@ class Wave():
             except Exception as e:
                 self.chunks.remove(chunk)
                 #print(e)
-            
+
+    def assert_wave(self):
+        for chunk in self.chunks.copy():
+            try:
+                chunk.assert_chunk()
+            except Exception as e:
+                raise e
 
     def __str__(self):
         s=''
