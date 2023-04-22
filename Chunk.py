@@ -41,9 +41,9 @@ class Chunk(ABC):
 class TheRIFFChunk(Chunk):
 
     def __init__(self):
-        super().__init__('The RIFF Chunk','RIFF',[TextField('Chunk ID',4,0,'UTF-8','big',True),
-                        NumberField('Chunk Size',4,4,'UTF-32','little',True),
-                        TextField('Format',4,8,'UTF-8','big',True)])
+        super().__init__('The RIFF Chunk','RIFF',[TextField('Chunk ID',4,'UTF-8','big',True),
+                        NumberField('Chunk Size',4,'UTF-32','little',True),
+                        TextField('Format',4,'UTF-8','big',True)])
         
     def read_chunk(self,file):
         for field in self.fields:
@@ -54,14 +54,14 @@ class TheRIFFChunk(Chunk):
 class TheFmtChunk(Chunk):
 
     def __init__(self):
-        super().__init__('The Fmt Chunk','fmt ', [TextField('Subchunk1 ID',4,12,'UTF-8','big',True),
-        NumberField('Subchunk1 Size',4,16,'UTF-8','little',True),
-        NumberField('Audio Format',2,20,'UTF-8','little',True),
-        NumberField('Number of Channels',2,22,'UTF-8','little',True),
-        NumberField('Sample Rate',4,24,'UTF-32','little',True),
-        NumberField('Byte Rate',4,28,'UTF-32','little',True),
-        NumberField('Block Align',2,32,'UTF-8','little',True),
-        NumberField('Bits Per Sample',2,34,'UTF-8','little',True)])
+        super().__init__('The Fmt Chunk','fmt ', [TextField('Subchunk1 ID',4,'UTF-8','big',True),
+        NumberField('Subchunk1 Size',4,'UTF-8','little',True),
+        NumberField('Audio Format',2,'UTF-8','little',True),
+        NumberField('Number of Channels',2,'UTF-8','little',True),
+        NumberField('Sample Rate',4,'UTF-32','little',True),
+        NumberField('Byte Rate',4,'UTF-32','little',True),
+        NumberField('Block Align',2,'UTF-8','little',True),
+        NumberField('Bits Per Sample',2,'UTF-8','little',True)])
 
     def read_chunk(self,file):
         for field in self.fields:
@@ -72,9 +72,9 @@ class TheFmtChunk(Chunk):
 class TheDataChunk(Chunk):
 
     def __init__(self):
-        super().__init__('The Data Chunk','data',[TextField('Subchunk2 ID',4,36,'UTF-8','big',True),
-        NumberField('Subchunk2 Size',4,40,'UTF-32','little',True),
-        TextField('Data',None,44,'ISO-8859-1','little',False)])
+        super().__init__('The Data Chunk','data',[TextField('Subchunk2 ID',4,'UTF-8','big',True),
+        NumberField('Subchunk2 Size',4,'UTF-32','little',True),
+        TextField('Data',None,'ISO-8859-1','little',False)])
 
     def read_chunk(self,file):
         self.fields[0].read_field(file)
@@ -86,9 +86,9 @@ class TheDataChunk(Chunk):
 class TheFactChunk(Chunk):
 
     def __init__(self):
-        super().__init__('The Fact Chunk','fact',[TextField('Subchunk2 ID',4,36,'UTF-8','big',True),
-        NumberField('Subchunk2 Size',4,40,'UTF-32','little',True),
-        TextField('Data',None,44,'ISO-8859-1','little',True)])
+        super().__init__('The Fact Chunk','fact',[TextField('Subchunk2 ID',4,'UTF-8','big',True),
+        NumberField('Subchunk2 Size',4,'UTF-32','little',True),
+        TextField('Data',None,'ISO-8859-1','little',True)])
 
     def read_chunk(self,file):
         self.fields[0].read_field(file)
@@ -109,9 +109,9 @@ class TheListChunk(Chunk):
 
     # this init is incomplete and only contains 3 'preamble' fields which will or will not be followed by list of other subchunks
     def __init__(self):
-        super().__init__('The List Chunk','LIST',[TextField('List Chunk ID',4,336,'UTF-8','big',True),
-        NumberField('List Chunk Size',4,440,'UTF-32','little',True),
-        TextField('List Type ID',4,3336,'UTF-8','big',True)])
+        super().__init__('The List Chunk','LIST',[TextField('List Chunk ID',4,'UTF-8','big',True),
+        NumberField('List Chunk Size',4,'UTF-32','little',True),
+        TextField('List Type ID',4,'UTF-8','big',True)])
 
     def read_chunk(self,file):
         self.fields[0].read_field(file)
@@ -119,11 +119,11 @@ class TheListChunk(Chunk):
         self.fields[2].read_field(file)
 
         while(self.is_infoID_valid(file)):
-            infoID = TextField('List Chunk ID',4,336,'UTF-8','big',True)
+            infoID = TextField('List Chunk ID',4,'UTF-8','big',True)
             infoID.read_field(file)
-            size = NumberField('List Chunk Size',4,440,'UTF-32','little',True)
+            size = NumberField('List Chunk Size',4,'UTF-32','little',True)
             size.read_field(file)
-            text = TextField('List Type ID',size.data,3336,'UTF-8','big',True)
+            text = TextField('List Type ID',size.data,'UTF-8','big',True)
             text.read_field(file)
             self.fields.append(infoID)
             self.fields.append(size)
@@ -131,7 +131,7 @@ class TheListChunk(Chunk):
         file.seek(0)
                 
     def is_infoID_valid(self,file):
-        testID = TextField('test ID',4,1111,'UTF-8','big',True)
+        testID = TextField('test ID',4,'UTF-8','big',True)
 
         if testID.get_field_without_moving_cursor(file) in self.LIST_CHUNK_INFO_ID:
             return True

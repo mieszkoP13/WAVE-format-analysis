@@ -10,16 +10,16 @@ class bcolors:
     ENDC = '\033[0m'
 
 class Field(ABC):
-    def __init__(self, name:str, size:int, offset:int, encoding:str, endian:str, isDataCrucial:bool):
+    def __init__(self, name:str, size:int, encoding:str, endian:str, isDataCrucial:bool):
         self.name = name
         self.size = size
-        self.offset = offset
+        self.offset: int = None
         self.encoding = encoding
         self.endian = endian
 
         # Informs if data of this field is vital to the analysis; if not, it shall not be displayable
         self.isDataCrucial = isDataCrucial
-        self.data = None
+        self.data: str = None
 
     def __str__(self):
         return f'{bcolors.BLUE}Name: {self.name}{bcolors.ENDC}, '\
@@ -39,10 +39,11 @@ class Field(ABC):
 
 
 class TextField(Field):
-    def __init__(self, name:str, size:int, offset:int, encoding:str, endian:str, isDataCrucial:bool):
-        super().__init__(name, size, offset, encoding, endian, isDataCrucial)
+    def __init__(self, name:str, size:int, encoding:str, endian:str, isDataCrucial:bool):
+        super().__init__(name, size, encoding, endian, isDataCrucial)
 
     def read_field(self,file):
+        self.offset = file.tell()
         d = file.read(self.size).decode(self.encoding)
         if d == None:
             raise Exception("read field error")
@@ -54,10 +55,11 @@ class TextField(Field):
         return _data
 
 class NumberField(Field):
-    def __init__(self, name:str, size:int, offset:int, encoding:str, endian, isDataCrucial:bool):
-        super().__init__(name, size, offset, encoding, endian, isDataCrucial)
+    def __init__(self, name:str, size:int, encoding:str, endian, isDataCrucial:bool):
+        super().__init__(name, size, encoding, endian, isDataCrucial)
 
     def read_field(self,file):
+        self.offset = file.tell()
         d = int.from_bytes(file.read(self.size), self.endian)
         if d == None:
             raise Exception("read field error")

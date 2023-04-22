@@ -2,17 +2,24 @@ from Field import *
 from Chunk import *
 
 class Wave():
-    chunks = [ TheRIFFChunk(), # mandatory chunk
-               TheFmtChunk(),
-               TheFactChunk(),
-               TheDataChunk(), # mandatory chunk
-               TheListChunk() ]
+    def __init__(self, fileName):
 
-    def read_wave(self,file):
+        try:
+            self.file = open(fileName, 'rb')
+        except IOError as e:
+            raise e
+        
+        self.chunks = [ TheRIFFChunk(), # mandatory chunk
+                        TheFmtChunk(),
+                        TheFactChunk(),
+                        TheDataChunk(), # mandatory chunk
+                        TheListChunk() ]
+
+    def read_wave(self):
         for chunk in self.chunks.copy():
             try:
-                chunk.find_chunk(file)
-                chunk.read_chunk(file)
+                chunk.find_chunk(self.file)
+                chunk.read_chunk(self.file)
             except Exception as e:
                 self.chunks.remove(chunk)
                 #print(e)

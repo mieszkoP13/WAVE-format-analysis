@@ -1,10 +1,9 @@
 from Wave import *
 
 def test(fileName):
-    with open(fileName,'rb') as f:
-        wave = Wave()
-        wave.read_wave(f)
-        print(wave,end='')
+    wave = Wave(fileName)
+    wave.read_wave()
+    print(wave,end='')
 
 if __name__ == '__main__':
-    test('./sound-examples/ex00.wav')
+    test('./sound-examples/ex14.wav')
