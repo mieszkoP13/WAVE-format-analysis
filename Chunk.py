@@ -14,15 +14,17 @@ class Chunk(ABC):
     def find_chunk(self,file):
         fileTxt = file.read()
         # finding a postion of a chunk by its ID
-        pos = fileTxt.find(f'{self.chunkAssertID}'.encode())
+        #pos = fileTxt.find(f'{self.chunkAssertID}'.encode())
+        pos = [i for i in range(len(fileTxt)) if fileTxt.startswith(f'{self.chunkAssertID}'.encode(), i)]
 
         # if it hasnt been found
-        if pos == -1:
+        if not pos:
             file.seek(0)
             raise Exception("chunk not found")
         
         # if it was found, file cursor is set to that position
-        file.seek(pos)
+        #file.seek(pos)
+        return pos
 
     @abstractmethod
     def read_chunk(self,file):

@@ -1,5 +1,12 @@
 from Field import *
 from Chunk import *
+import copy
+
+chunks_ = [ TheRIFFChunk(), # mandatory chunk
+            TheFmtChunk(),
+            TheFactChunk(),
+            TheDataChunk(), # mandatory chunk
+            TheListChunk() ]
 
 class Wave():
     def __init__(self, fileName: str):
@@ -9,19 +16,19 @@ class Wave():
         except IOError as e:
             raise e
         
-        self.chunks = [ TheRIFFChunk(), # mandatory chunk
-                        TheFmtChunk(),
-                        TheFactChunk(),
-                        TheDataChunk(), # mandatory chunk
-                        TheListChunk() ]
+        self.chunks = []
 
+    # method to find and read all potential chunks in a file
     def read_wave(self):
-        for chunk in self.chunks.copy():
+        for chunk in chunks_.copy():
             try:
-                chunk.find_chunk(self.file)
-                chunk.read_chunk(self.file)
+                positions = chunk.find_chunk(self.file)
+                for pos in positions:
+                    self.file.seek(pos)
+                    chunk.read_chunk(self.file)
+                    self.chunks.append(copy.deepcopy(chunk))
             except Exception as e:
-                self.chunks.remove(chunk)
+                pass
                 #print(e)
 
     def assert_wave(self):
@@ -29,7 +36,8 @@ class Wave():
             try:
                 chunk.assert_chunk()
             except Exception as e:
-                raise e
+                self.chunks.remove(chunk)
+                #print(e)
 
     def __str__(self):
         s=''

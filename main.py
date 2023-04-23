@@ -12,5 +12,5 @@ def test_fourier(fileName):
     f1.plot_magnitude_spectrum('test',1)
 
 if __name__ == '__main__':
-    test('./sound-examples/ex18.wav')
-    test_fourier('./sound-examples/ex1.wav')
+    test('./sound-examples/metadata.wav')
+    #test_fourier('./sound-examples/ex1.wav')

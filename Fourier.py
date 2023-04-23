@@ -13,7 +13,7 @@ class Fourier():
         X = np.fft.fft(self.signal)
         X_mag = np.absolute(X)
         
-        plt.figure(figsize=(18, 5))
+        plt.figure(figsize=(13, 5))
         
         f = np.linspace(0, self.sr, len(X_mag))
         f_bins = int(len(X_mag) * f_ratio)  
