@@ -208,3 +208,32 @@ class TheCueChunk(Chunk):
         pass
         #assert self.fields[0].data == 'fact', f'Invalid {self.fields[0].name}'
         #assert self.fields[1].data > 0, f'Invalid {self.fields[1].name}'
+
+class TheInstrumentChunk(Chunk):
+
+    def __init__(self):
+        super().__init__('The Instrument Chunk','inst', [TextField('Instrument Chunk ID',4,'UTF-8','big',True),
+        NumberField('Instrument Chunk Size',4,'UTF-8','little',True),
+        NumberField('unshifted note',1,'UTF-8','little',True),
+        NumberField('fine tuning',1,'UTF-8','little',True),
+        NumberField('gain',1,'UTF-8','little',True),
+        NumberField('low note',1,'UTF-8','little',True),
+        NumberField('high note',1,'UTF-8','little',True),
+        NumberField('low velocity',1,'UTF-8','little',True),
+        NumberField('low velocity',1,'UTF-8','little',True)])
+
+    def read_chunk(self,file):
+        for field in self.fields:
+            field.read_field(file)
+        file.seek(0)
+
+    def assert_chunk(self):
+        assert self.fields[0].data == 'inst', f'Invalid {self.fields[0].name}'
+        assert self.fields[1].data >= 0, f'Invalid {self.fields[1].name}'
+        assert self.fields[2].data >= 0, f'Invalid {self.fields[2].name}'
+        assert self.fields[3].data >= 0, f'Invalid {self.fields[3].name}'
+        assert self.fields[4].data >= 0, f'Invalid {self.fields[4].name}'
+        assert self.fields[5].data >= 0, f'Invalid {self.fields[5].name}'
+        assert self.fields[6].data >= 0, f'Invalid {self.fields[6].name}'
+        assert self.fields[7].data >= 0, f'Invalid {self.fields[7].name}'
+        ##############
