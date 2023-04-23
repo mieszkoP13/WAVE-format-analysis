@@ -169,3 +169,42 @@ class TheListChunk(Chunk):
     def assert_chunk(self):
         assert self.fields[0].data == 'LIST', f'Invalid {self.fields[0].name}'
         assert self.fields[1].data > 0, f'Invalid {self.fields[1].name}'
+
+class TheCueChunk(Chunk):
+
+    def __init__(self):
+        super().__init__('The Cue Chunk','cue ',[TextField('Fact Chunk ID',4,'UTF-8','big',True),
+        NumberField('Cue Chunk Size',4,'UTF-32','little',True),
+        NumberField('Number of Cue Points',4,'UTF-32','little',True)])
+
+    def read_chunk(self,file):
+        self.fields[0].read_field(file)
+        self.fields[1].read_field(file)
+        self.fields[2].read_field(file)
+
+        for _ in range(self.fields[2].data):
+            id = TextField('Cue Point ID',4,'UTF-8','big',True)
+            id.read_field(file)
+            pos = NumberField('Cue Point Position',4,'UTF-32','little',True)
+            pos.read_field(file)
+            dataChunkID = TextField('Cue Point Data Chunk ID',4,'UTF-8','big',True)
+            dataChunkID.read_field(file)
+            chunkStart = NumberField('Chunk Start',4,'UTF-32','little',True)
+            chunkStart.read_field(file)
+            blockStart = NumberField('Block Start',4,'UTF-32','little',True)
+            blockStart.read_field(file)
+            sampleStart = NumberField('Sample Start',4,'UTF-32','little',True)
+            sampleStart.read_field(file)
+
+            self.fields.append(id)
+            self.fields.append(pos)
+            self.fields.append(dataChunkID)
+            self.fields.append(chunkStart)
+            self.fields.append(blockStart)
+            self.fields.append(sampleStart)
+        file.seek(0)
+
+    def assert_chunk(self):
+        pass
+        #assert self.fields[0].data == 'fact', f'Invalid {self.fields[0].name}'
+        #assert self.fields[1].data > 0, f'Invalid {self.fields[1].name}'

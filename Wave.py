@@ -4,6 +4,7 @@ import copy
 
 chunks_ = [ TheRIFFChunk(), # mandatory chunk
             TheFmtChunk(),
+            TheCueChunk(),
             TheFactChunk(),
             TheDataChunk(), # mandatory chunk
             TheListChunk() ]
