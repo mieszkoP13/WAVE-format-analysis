@@ -33,6 +33,10 @@ class Field(ABC):
     def read_field(self,file):
         pass
 
+    @abstractmethod
+    def write_field(self,file):
+        pass
+
 
 class TextField(Field):
     def __init__(self, name:str, size:int, encoding:str, endian:str, isDataCrucial:bool):
@@ -45,6 +49,9 @@ class TextField(Field):
             raise Exception("read field error")
         self.data = d
 
+    def write_field(self,file):
+        file.write(self.data.encode(self.encoding))
+
 class NumberField(Field):
     def __init__(self, name:str, size:int, encoding:str, endian, isDataCrucial:bool):
         super().__init__(name, size, encoding, endian, isDataCrucial)
@@ -55,3 +62,6 @@ class NumberField(Field):
         if d == None:
             raise Exception("read field error")
         self.data = d
+
+    def write_field(self,file):
+        file.write(self.data.to_bytes(self.size, self.endian))

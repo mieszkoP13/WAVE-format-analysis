@@ -27,6 +27,10 @@ class Chunk(ABC):
     def read_chunk(self,file):
         pass
 
+    def write_chunk(self,file):
+        for field in self.fields:
+            field.write_field(file)
+
     @abstractmethod
     def assert_chunk(self,file):
         pass
@@ -155,7 +159,7 @@ class TheListChunk(Chunk):
 
                 size = NumberField('List Chunk Size',4,'UTF-32','little',True)
                 size.read_field(file)
-                text = TextField('List Type ID',size.data,'UTF-8','big',True)
+                text = TextField('List Text',size.data,'UTF-8','big',True)
                 text.read_field(file)
 
                 self.fields.append(infoID)

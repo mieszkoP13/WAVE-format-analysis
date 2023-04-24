@@ -1,6 +1,7 @@
 from Field import *
 from Chunk import *
 import copy
+import os
 
 chunks_ = [ TheRIFFChunk(), # mandatory chunk
             TheFmtChunk(),
@@ -41,6 +42,19 @@ class Wave():
             except Exception as e:
                 self.chunks.remove(chunk)
                 #print(e)
+
+    def clear_metadata(self):
+
+        originalFileName = f'{self.file.name}'
+        newFileNameBase = os.path.splitext(originalFileName)[0] # ./sound-examples/ex1
+
+        newFileName_noMeta = f'{newFileNameBase}_noMeta.wav' # ./sound-examples/ex1_tmp.wav
+
+        file_noMeta = open(newFileName_noMeta, 'wb')
+
+        for chunk in self.chunks:
+            if not isinstance(chunk,TheListChunk):
+                chunk.write_chunk(file_noMeta)
 
     def __str__(self):
         s=''
