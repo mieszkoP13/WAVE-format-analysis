@@ -12,5 +12,13 @@ def test_fourier(fileName):
     f1.plot_magnitude_spectrum('test',1)
 
 if __name__ == '__main__':
-    test('./sound-examples/ex_.wav')
+    test('./sound-examples/ex23.wav')
     #test_fourier('./sound-examples/ex1.wav')
+
+#### todo ####
+# junk chunk
+# pad chunk
+# id3 chunk
+# bext chunk
+# cart chunk
+# ds64 chunk

@@ -8,7 +8,8 @@ chunks_ = [ TheRIFFChunk(), # mandatory chunk
             TheFactChunk(),
             TheDataChunk(), # mandatory chunk
             TheListChunk(),
-            TheInstrumentChunk() ]
+            TheInstrumentChunk(),
+            TheSampleChunk() ]
 
 class Wave():
     def __init__(self, fileName: str):

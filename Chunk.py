@@ -13,18 +13,15 @@ class Chunk(ABC):
 
     def find_chunk(self,file):
         fileTxt = file.read()
-        # finding a postion of a chunk by its ID
-        #pos = fileTxt.find(f'{self.chunkAssertID}'.encode())
-        pos = [i for i in range(len(fileTxt)) if fileTxt.startswith(f'{self.chunkAssertID}'.encode(), i)]
+        # finding a all the positions of a chunk candidates by its ID
+        positions = [i for i in range(len(fileTxt)) if fileTxt.startswith(f'{self.chunkAssertID}'.encode(), i)]
 
-        # if it hasnt been found
-        if not pos:
+        # if no position was found
+        if not positions:
             file.seek(0)
             raise Exception("chunk not found")
         
-        # if it was found, file cursor is set to that position
-        #file.seek(pos)
-        return pos
+        return positions
 
     @abstractmethod
     def read_chunk(self,file):
@@ -214,13 +211,13 @@ class TheInstrumentChunk(Chunk):
     def __init__(self):
         super().__init__('The Instrument Chunk','inst', [TextField('Instrument Chunk ID',4,'UTF-8','big',True),
         NumberField('Instrument Chunk Size',4,'UTF-8','little',True),
-        NumberField('unshifted note',1,'UTF-8','little',True),
-        NumberField('fine tuning',1,'UTF-8','little',True),
-        NumberField('gain',1,'UTF-8','little',True),
-        NumberField('low note',1,'UTF-8','little',True),
-        NumberField('high note',1,'UTF-8','little',True),
-        NumberField('low velocity',1,'UTF-8','little',True),
-        NumberField('low velocity',1,'UTF-8','little',True)])
+        NumberField('Uunshifted note',1,'UTF-8','little',True),
+        NumberField('Fine tuning',1,'UTF-8','little',True),
+        NumberField('Gain',1,'UTF-8','little',True),
+        NumberField('Low note',1,'UTF-8','little',True),
+        NumberField('High note',1,'UTF-8','little',True),
+        NumberField('Low velocity',1,'UTF-8','little',True),
+        NumberField('Low velocity',1,'UTF-8','little',True)])
 
     def read_chunk(self,file):
         for field in self.fields:
@@ -237,3 +234,49 @@ class TheInstrumentChunk(Chunk):
         assert self.fields[6].data >= 0, f'Invalid {self.fields[6].name}'
         assert self.fields[7].data >= 0, f'Invalid {self.fields[7].name}'
         ##############
+
+class TheSampleChunk(Chunk):
+
+    def __init__(self):
+        super().__init__('The Sample Chunk','smpl',[TextField('Sample Chunk ID',4,'UTF-8','big',True),
+        NumberField('Sample Chunk Size',4,'UTF-32','little',True),
+        NumberField('Manufacturer',4,'UTF-32','little',True),
+        NumberField('Product',4,'UTF-32','little',True),
+        NumberField('Sample period',4,'UTF-32','little',True),
+        NumberField('MIDI unity note',4,'UTF-32','little',True),
+        NumberField('MIDI pitch fraction',4,'UTF-32','little',True),
+        NumberField('SMPTE format',4,'UTF-32','little',True),
+        NumberField('SMPTE offset',4,'UTF-32','little',True),
+        NumberField('Number of sample loops',4,'UTF-32','little',True),
+        NumberField('Sample data',4,'UTF-32','little',True)])
+
+    def read_chunk(self,file):
+        for field in self.fields:
+            field.read_field(file)
+
+        for _ in range(self.fields[9].data):
+            id_ = TextField('Sample loop ID',4,'UTF-8','big',True)
+            id_.read_field(file)
+            type_ = NumberField('Sample loop Type',4,'UTF-32','little',True)
+            type_.read_field(file)
+            start_ = NumberField('Sample loop Start',4,'UTF-32','little',True)
+            start_.read_field(file)
+            end_ = NumberField('Sample loop End',4,'UTF-32','little',True)
+            end_.read_field(file)
+            fraction_ = NumberField('Sample loop Fraction',4,'UTF-32','little',True)
+            fraction_.read_field(file)
+            numberOfTimesToPlayTheLoop_ = NumberField('Number of times to play the loop',4,'UTF-32','little',True)
+            numberOfTimesToPlayTheLoop_ .read_field(file)
+            
+            self.fields.append(id_)
+            self.fields.append(type_)
+            self.fields.append(start_)
+            self.fields.append(end_)
+            self.fields.append(fraction_)
+            self.fields.append(numberOfTimesToPlayTheLoop_)
+        file.seek(0)
+
+    def assert_chunk(self):
+        pass
+        #assert self.fields[0].data == 'fact', f'Invalid {self.fields[0].name}'
+        #assert self.fields[1].data > 0, f'Invalid {self.fields[1].name}'
