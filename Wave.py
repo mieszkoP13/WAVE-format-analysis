@@ -48,7 +48,7 @@ class Wave():
         originalFileName = f'{self.file.name}'
         newFileNameBase = os.path.splitext(originalFileName)[0] # ./sound-examples/ex1
 
-        newFileName_noMeta = f'{newFileNameBase}_noMeta.wav' # ./sound-examples/ex1_tmp.wav
+        newFileName_noMeta = f'{newFileNameBase}_noMeta.wav' # ./sound-examples/ex1_noMeta.wav
 
         file_noMeta = open(newFileName_noMeta, 'wb')
 

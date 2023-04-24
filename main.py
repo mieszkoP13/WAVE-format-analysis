@@ -6,7 +6,6 @@ def test(fileName):
     wave.read_wave()
     wave.assert_wave()
     wave.clear_metadata()
-    #wave.test_123()
     print(wave,end='')
 
 def test_fourier(fileName):
