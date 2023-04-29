@@ -13,7 +13,7 @@ class Chunk(ABC):
 
     def find_chunk(self,file):
         fileTxt = file.read()
-        # finding a all the positions of a chunk candidates by its ID
+        # finding all the positions of a chunk candidates by its ID
         positions = [i for i in range(len(fileTxt)) if fileTxt.startswith(f'{self.chunkAssertID}'.encode(), i)]
 
         # if no position was found

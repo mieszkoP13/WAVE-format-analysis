@@ -3,14 +3,14 @@ from Chunk import *
 import copy
 import os
 
-chunks_ = [ TheRIFFChunk(), # mandatory chunk
-            TheFmtChunk(),
-            TheCueChunk(),
-            TheFactChunk(),
-            TheDataChunk(), # mandatory chunk
-            TheListChunk(),
-            TheInstrumentChunk(),
-            TheSampleChunk() ]
+chunks_instance_list = [ TheRIFFChunk(), # mandatory chunk
+                         TheFmtChunk(),
+                         TheCueChunk(),
+                         TheFactChunk(),
+                         TheDataChunk(), # mandatory chunk
+                         TheListChunk(),
+                         TheInstrumentChunk(),
+                         TheSampleChunk() ]
 
 class Wave():
     def __init__(self, fileName: str):
@@ -24,7 +24,7 @@ class Wave():
 
     # method to find and read all potential chunks in a file
     def read_wave(self):
-        for chunk in chunks_.copy():
+        for chunk in chunks_instance_list.copy():
             try:
                 positions = chunk.find_chunk(self.file)
                 for pos in positions:
