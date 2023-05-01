@@ -3,8 +3,10 @@ from Chunk import *
 import copy
 import os
 
-chunks_instance_list = [ TheRIFFChunk(), # mandatory chunk
-                         TheFmtChunk(),
+class Wave():
+
+    POSSIBLE_CHUNKS = [ TheRIFFChunk(), # mandatory chunk
+                         TheFormatChunk(), # mandatory chunk
                          TheCueChunk(),
                          TheFactChunk(),
                          TheDataChunk(), # mandatory chunk
@@ -12,9 +14,7 @@ chunks_instance_list = [ TheRIFFChunk(), # mandatory chunk
                          TheInstrumentChunk(),
                          TheSampleChunk() ]
 
-class Wave():
     def __init__(self, fileName: str):
-
         try:
             self.file = open(fileName, 'rb')
         except IOError as e:
@@ -24,7 +24,8 @@ class Wave():
 
     # method to find and read all potential chunks in a file
     def read_wave(self):
-        for chunk in chunks_instance_list.copy():
+        for chunk in self.POSSIBLE_CHUNKS.copy():
+            self.file.seek(0)
             try:
                 positions = chunk.find_chunk(self.file)
                 for pos in positions:
@@ -35,15 +36,7 @@ class Wave():
                 pass
                 #print(e)
 
-    def assert_wave(self):
-        for chunk in self.chunks.copy():
-            try:
-                chunk.assert_chunk()
-            except Exception as e:
-                self.chunks.remove(chunk)
-                #print(e)
-
-    def clear_metadata(self):
+    def create_clean_copy(self):
 
         originalFileName = f'{self.file.name}'
         newFileNameBase = os.path.splitext(originalFileName)[0] # ./sound-examples/ex1
@@ -53,7 +46,7 @@ class Wave():
         file_noMeta = open(newFileName_noMeta, 'wb')
 
         for chunk in self.chunks:
-            if not isinstance(chunk,TheListChunk):
+            if isinstance(chunk,TheRIFFChunk) or isinstance(chunk,TheFormatChunk) or isinstance(chunk,TheDataChunk):
                 chunk.write_chunk(file_noMeta)
 
     def __str__(self):

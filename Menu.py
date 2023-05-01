@@ -12,7 +12,6 @@ def menu():
 
     wave = Wave(pathToFile)
     wave.read_wave()
-    wave.assert_wave()
 
     f1 = Fourier(pathToFile)
 
@@ -35,11 +34,11 @@ def menu():
         if option == 1:
             print(wave,end='')
         elif option == 2:
-            wave.clear_metadata()
+            wave.create_clean_copy()
             print('Your no metadata file has been created; now still operating on the original file')
         elif option == 3:
-            f1.plot_magnitude_spectrum('test',1)
-            print('File with magnitude spectrum has been created in project\'s directory')            
+            f1.plot_magnitude_spectrum()
+            print('File with fft plots has been created in project\'s directory')     
         elif option == 0:
             break
         else:
