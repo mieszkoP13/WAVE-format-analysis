@@ -9,7 +9,7 @@ class Fourier():
         except IOError as e:
             raise e
 
-    def plot_magnitude_spectrum(self, f_ratio=1):
+    def plot_fourier(self, f_ratio=1):
         spectrum = np.fft.fft(self.signal)
         magnitude = np.absolute(spectrum)
         phase = np.angle(spectrum)

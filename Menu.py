@@ -37,7 +37,7 @@ def menu():
             wave.create_clean_copy()
             print('Your no metadata file has been created; now still operating on the original file')
         elif option == 3:
-            f1.plot_magnitude_spectrum()
+            f1.plot_fourier()
             print('File with fft plots has been created in project\'s directory')     
         elif option == 0:
             break
