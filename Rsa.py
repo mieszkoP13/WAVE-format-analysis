@@ -89,6 +89,38 @@ class RSA:
         plaintext = self.remove_padding(padded_plaintext)
         return plaintext
     
+    def xor_blocks(self, block1, block2):
+        return ''.join(chr(ord(c1) ^ ord(c2)) for c1, c2 in zip(block1, block2))
+
+    def encrypt_cbc(self, plaintext, key, iv):
+        padded_plaintext = self.pad_message(plaintext)
+        blocks = self.split_blocks(padded_plaintext)
+        encrypted_blocks = []
+        previous_cipher_block = iv
+
+        for block in blocks:
+            xored_block = self.xor_blocks(block, previous_cipher_block)
+            encrypted_block = self.encrypt_data(xored_block,key)
+            previous_cipher_block = ''.join(chr(x) for x in encrypted_block)
+            encrypted_blocks += encrypted_block
+
+        return ''.join(chr(x) for x in encrypted_blocks)
+
+    def decrypt_cbc(self, ciphertext, key, iv):
+        blocks = self.split_blocks(ciphertext)
+        decrypted_blocks = []
+        previous_cipher_block = iv
+
+        for block in blocks:
+            decrypted_block = self.decrypt_data(block,key)
+            blck = ''.join(chr(x) for x in decrypted_block)
+            decrypted_blocks += self.xor_blocks(blck, previous_cipher_block)
+            previous_cipher_block = block
+
+        padded_plaintext = ''.join(decrypted_blocks)
+        plaintext = self.remove_padding(padded_plaintext)
+        return plaintext
+    
 ########################################################
 # demo
 ########################################################
@@ -115,3 +147,11 @@ print("Ciphertext ecb:", ciphertext)
 
 decrypted_plaintext = rsa.decrypt_ecb(ciphertext, priv)
 print("Decrypted text ecb:", decrypted_plaintext)
+
+########################################################
+
+ciphertext = rsa.encrypt_cbc("Hello, wosdfsdfrld!", pub, "111111113333")
+print("Ciphertext:", ciphertext)
+
+decrypted_plaintext = rsa.decrypt_cbc(ciphertext, priv, "111111113333")
+print("Decrypted plaintext:", decrypted_plaintext)
