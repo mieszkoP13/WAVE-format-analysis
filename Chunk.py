@@ -97,7 +97,7 @@ class TheDataChunk(Chunk):
     def __init__(self):
         super().__init__('The Data Chunk','data',[TextField('Data Chunk ID',4,'UTF-8','big',True),
         NumberField('Data Chunk Size',4,'UTF-32','little',True),
-        TextField('Data Chunk Data',None,'ISO-8859-1','little',False)])
+        TextField('Data Chunk Data',None,'raw_unicode_escape','big',False)])
 
     def read_chunk(self,file):
         self.fields[0].read_field(file)

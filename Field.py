@@ -44,7 +44,7 @@ class TextField(Field):
 
     def read_field(self,file):
         self.offset = file.tell()
-        d = file.read(self.size).decode(self.encoding)
+        d = file.read(self.size).decode(self.encoding,'backslashreplace')
         if d == None:
             raise Exception("read field error")
         self.data = d
