@@ -66,9 +66,9 @@ class Wave():
             if isinstance(chunk,TheDataChunk):
                 chunk.fields[2].encoding = 'raw_unicode_escape'
                 if mode == 'ecb':
-                    encrypted_data_ebc = self.rsa.encrypt_ecb(chunk.fields[2].data.encode('latin1'))
+                    encrypted_data_ebc = self.rsa.encrypt_ecb(chunk.fields[2].data)
                 elif mode == 'cbc':
-                    encrypted_data_ebc = self.rsa.encrypt_cbc(chunk.fields[2].data.encode('latin1'))
+                    encrypted_data_ebc = self.rsa.encrypt_cbc(chunk.fields[2].data)
 
                 chunk.fields[1].data = len(encrypted_data_ebc)
                 chunk.fields[2].data = encrypted_data_ebc.decode('latin1','backslashreplace')
@@ -96,7 +96,7 @@ class Wave():
                     decrypted_data_ebc = self.rsa.decrypt_cbc(chunk.fields[2].data.encode('raw_unicode_escape'))
 
                 chunk.fields[1].data = len(decrypted_data_ebc)
-                chunk.fields[2].data = decrypted_data_ebc.decode('raw_unicode_escape','backslashreplace')
+                chunk.fields[2].data = decrypted_data_ebc
                 chunk.write_chunk(file_decr)
                 chunk.fields[2].encoding = 'raw_unicode_escape'
             else:

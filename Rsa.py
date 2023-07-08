@@ -1,118 +1,111 @@
+import sympy
+import os
 
 class Rsa:
-    def __init__(self, key_size=512, block_size=16):
-        # self.public_key, self.private_key = KeyGenerator(key_size).generateKeys()
+    def __init__(self, key_size=512):
+        self.public_key, self.private_key = self.generate_rsa_keys()
         self.key_size = key_size
-        self.block_size = block_size
-        self.key = b"123secretkey123"
+        self.block_size = (self.public_key[1].bit_length() - 1) // 8
         # note that   len(iv) == block_size   !!!
-        self.iv = b'a1aafaag3a2aaa4a'
-        self.key_length = len(self.key)
+        self.iv = os.urandom(self.public_key[1].bit_length() // 8)
 
-    def pad(self, text):
-        padding_length = self.block_size - (len(text) % self.block_size)
-        padding = bytes([padding_length]) * padding_length
+    def pad(self, text, block_size):
+        padding_size = block_size - (len(text) % block_size)
+        padding = bytes([padding_size] * padding_size)
         return text + padding
 
     def unpad(self, padded_text):
-        padding_length = padded_text[-1]
-        return padded_text[:-padding_length]
+        padding_size = padded_text[-1]
+        return padded_text[:-padding_size]
+
+    def split_text(self, text, block_size):
+        return [text[i : i + block_size] for i in range(0, len(text), block_size)]
+
+    def bytes_to_int(self, b):
+        return int.from_bytes(b, byteorder='big')
+
+    def int_to_bytes(self, i, block_size):
+        return i.to_bytes(block_size, byteorder='big')
+
+    def encrypt_block(self, block):
+        return pow(self.bytes_to_int(block), self.public_key[0], self.public_key[1])
+
+    def decrypt_block(self, block):
+        return self.int_to_bytes(pow(block, self.private_key[0], self.private_key[1]), self.block_size)
 
     def encrypt_ecb(self, plaintext):
-        padded_plaintext = self.pad(plaintext)
-        encrypted = bytearray()
-        for i in range(0, len(padded_plaintext), self.block_size):
-            block = padded_plaintext[i:i + self.block_size]
-            for j, byte in enumerate(block):
-                encrypted_byte = byte ^ self.key[j % self.key_length]
-                encrypted.append(encrypted_byte)
-        return encrypted
+        padded_text = self.pad(plaintext.encode('latin1'), self.block_size)
+        blocks = self.split_text(padded_text, self.block_size)
+
+        ciphertext_blocks = []
+        for block in blocks:
+            if self.bytes_to_int(block) >= self.public_key[1]:
+                raise ValueError("Plaintext block too large for RSA key size")
+            ciphertext_blocks.append(self.encrypt_block(block))
+
+        ciphertext = b''.join(self.int_to_bytes(block, self.block_size + 1) for block in ciphertext_blocks)
+        return ciphertext
 
     def decrypt_ecb(self, ciphertext):
-        decrypted = bytearray()
-        
-        for i in range(0, len(ciphertext), self.block_size):
-            block = ciphertext[i:i + self.block_size]
-            for j, byte in enumerate(block):
-                decrypted_byte = byte ^ self.key[j % self.key_length]
-                decrypted.append(decrypted_byte)
-        return self.unpad(decrypted)
+        blocks = self.split_text(ciphertext, self.block_size + 1)
 
-    def xor_bytes(self,a, b):
+        plaintext_blocks = []
+        for block in blocks:
+            plaintext_blocks.append(self.decrypt_block(self.bytes_to_int(block)))
+
+        padded_text = b''.join(plaintext_blocks)
+        plaintext = self.unpad(padded_text)
+
+        return plaintext.decode('latin1')  
+
+    def encrypt_cbc(self, plaintext):
+        padded_text = self.pad(plaintext.encode('latin1'), self.block_size)
+        blocks = self.split_text(padded_text, self.block_size)
+
+        ciphertext_blocks = []
+        previous_block = self.iv
+        for block in blocks:
+
+            if(type(previous_block) == int):
+                previous_block = self.int_to_bytes(previous_block, self.block_size + 1)
+            
+            xored_block = self.xor_bytes(block, previous_block)
+            encrypted_block = self.encrypt_block(xored_block)
+            ciphertext_blocks.append(encrypted_block)
+            previous_block = encrypted_block
+
+        ciphertext = b''.join(self.int_to_bytes(block, self.block_size + 1) for block in ciphertext_blocks)
+        return ciphertext
+
+
+    def decrypt_cbc(self, ciphertext):
+        blocks = self.split_text(ciphertext, self.block_size + 1)
+
+        plaintext_blocks = []
+        previous_block = self.iv
+        for block in blocks:
+
+            if(type(previous_block) == int):
+                previous_block = self.int_to_bytes(previous_block, self.block_size + 1)
+
+            decrypted_block = self.decrypt_block(self.bytes_to_int(block))
+            xored_block = self.xor_bytes(decrypted_block, previous_block)
+            plaintext_blocks.append(xored_block)
+            previous_block = self.bytes_to_int(block)
+
+        padded_text = b''.join(plaintext_blocks)
+        plaintext = self.unpad(padded_text)
+
+        return plaintext.decode('latin1')
+
+    def xor_bytes(self, a, b):
         return bytes(x ^ y for x, y in zip(a, b))
 
-    def encrypt_cbc(self,plaintext):
-        padded_plaintext = self.pad(plaintext)
-        encrypted = bytearray()
-        previous_cipher_block = self.iv
-
-        for i in range(0, len(padded_plaintext), self.block_size):
-            block = padded_plaintext[i:i + self.block_size]
-            xored_block = self.xor_bytes(block, previous_cipher_block)
-
-            for j, byte in enumerate(xored_block):
-                encrypted_byte = byte ^ self.key[j % self.key_length]
-                encrypted.append(encrypted_byte)
-
-            previous_cipher_block = encrypted[-self.block_size:]
-
-        return encrypted
-
-
-    def decrypt_cbc(self,ciphertext):
-        decrypted = bytearray()
-        previous_cipher_block = self.iv
-
-        for i in range(0, len(ciphertext), self.block_size):
-            block = ciphertext[i:i + self.block_size]
-
-            for j, byte in enumerate(block):
-                decrypted_byte = byte ^ self.key[j % self.key_length]
-                decrypted.append(decrypted_byte)
-
-            decrypted[-self.block_size:] = self.xor_bytes(decrypted[-self.block_size:], previous_cipher_block)
-            previous_cipher_block = block
-
-        return self.unpad(decrypted)
-
-
-# class tests
-
-# ff=open('tessst.txt','rb')
-# plaintext=ff.read().decode('raw_unicode_escape','backslashreplace')
-
-# rsa = Rsa()
-
-# encrypted = rsa.encrypt_ecb(plaintext.encode('latin1'))
-
-# f=open('tessst_encr.txt','wb')
-# f.write(encrypted.decode('latin1','backslashreplace').encode('raw_unicode_escape'))
-
-# fff=open('tessst_encr.txt','rb')
-# ciph=fff.read().decode('latin1','backslashreplace')
-
-# decrypted = rsa.decrypt_ecb(ciph.encode('raw_unicode_escape'))
-
-# f=open('tessst_decr.txt','wb')
-# f.write(decrypted.decode('raw_unicode_escape','backslashreplace').encode('latin1'))
-
-# ######################################################################################
-# ######################################################################################
-
-# ff=open('tessst.txt','rb')
-# plaintext=ff.read().decode('raw_unicode_escape','backslashreplace')
-
-# rsa = Rsa()
-
-# encrypted = rsa.encrypt_cbc(plaintext.encode('latin1'))
-
-# f=open('tessst_encr.txt','wb')
-# f.write(encrypted.decode('latin1','backslashreplace').encode('raw_unicode_escape'))
-
-# fff=open('tessst_encr.txt','rb')
-# ciph=fff.read().decode('latin1','backslashreplace')
-
-# decrypted = rsa.decrypt_cbc(ciph.encode('raw_unicode_escape'))
-
-# f=open('tessst_decr.txt','wb')
-# f.write(decrypted.decode('raw_unicode_escape','backslashreplace').encode('latin1'))
+    def generate_rsa_keys(self):
+        p = sympy.randprime(10000000, 30000000)
+        q = sympy.randprime(10000000, 30000000)
+        n = p * q
+        phi = (p - 1) * (q - 1)
+        e = 65537
+        d = pow(e, -1, phi)
+        return (e, n), (d, n)
