@@ -1,13 +1,15 @@
 import sympy
 import os
+from KeyGenerator import KeyGenerator
+import rsa
 
 class Rsa:
-    def __init__(self, key_size=512):
-        self.public_key, self.private_key = self.generate_rsa_keys()
+    def __init__(self, key_size=128):
+        self.public_key, self.private_key = KeyGenerator(key_size).generate_keys()
         self.key_size = key_size
         self.block_size = (self.public_key[1].bit_length() - 1) // 8
         # note that   len(iv) == block_size   !!!
-        self.iv = os.urandom(self.public_key[1].bit_length() // 8)
+        self.iv = os.urandom((self.public_key[1].bit_length() - 1) // 8)
 
     def pad(self, text, block_size):
         padding_size = block_size - (len(text) % block_size)
@@ -77,7 +79,6 @@ class Rsa:
         ciphertext = b''.join(self.int_to_bytes(block, self.block_size + 1) for block in ciphertext_blocks)
         return ciphertext
 
-
     def decrypt_cbc(self, ciphertext):
         blocks = self.split_text(ciphertext, self.block_size + 1)
 
@@ -100,12 +101,3 @@ class Rsa:
 
     def xor_bytes(self, a, b):
         return bytes(x ^ y for x, y in zip(a, b))
-
-    def generate_rsa_keys(self):
-        p = sympy.randprime(10000000, 30000000)
-        q = sympy.randprime(10000000, 30000000)
-        n = p * q
-        phi = (p - 1) * (q - 1)
-        e = 65537
-        d = pow(e, -1, phi)
-        return (e, n), (d, n)
